@@ -1,3 +1,7 @@
+# Custom
+./.idea/workspace.xml
+./.gitignore
+
 # Compiled class file
 *.class
 
