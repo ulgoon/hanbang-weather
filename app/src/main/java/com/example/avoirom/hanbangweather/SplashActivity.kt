@@ -1,47 +1,72 @@
 package com.example.avoirom.hanbangweather
 
 import android.content.pm.PackageManager
-import android.location.Location
 import android.os.Bundle
+import android.os.Looper
 import android.support.v4.app.ActivityCompat
 import android.support.v7.app.AppCompatActivity
-import android.util.Log
+import android.view.View
 import android.widget.Toast
-import com.google.android.gms.common.ConnectionResult
-import com.google.android.gms.common.GooglePlayServicesUtil
-import com.google.android.gms.common.api.GoogleApiClient
-import com.google.android.gms.location.LocationListener
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.*
+import kotlinx.android.synthetic.main.activity_splash.*
 
-class SplashActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
+class SplashActivity : AppCompatActivity() {
 
     private val TAG = "SplashActivity"
 
-    //Const
-    private val PERMISSION_REQUEST_CODE = 1001
-    private val PLAY_SERVICE_RESOLUTION_REQUEST = 1000
+    lateinit var fusedLocationProviderClient: FusedLocationProviderClient
+    lateinit var locationRequest: LocationRequest
+    lateinit var locationCallback: LocationCallback
 
-    //Variable
-    var mGoogleApiClient: GoogleApiClient? = null
-    var mLocationRequest: LocationRequest? = null
+    val REQUEST_CODE =1000
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
 
-        requestPermission()
-        if(checkPlayService()) {
-            buildGoogleApiClient()
-        }
-    }
+        // Check permission
 
-    private fun requestPermission() {
+        if (ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.ACCESS_FINE_LOCATION))
+            ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_CODE)
+        else {
+            buildLocationRequest()
+            buildLocationCallBack()
 
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // Create FusedProviderClient
+            fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
 
-            requestPermissions(arrayOf(android.Manifest.permission.ACCESS_COARSE_LOCATION, android.Manifest.permission.ACCESS_FINE_LOCATION), PERMISSION_REQUEST_CODE)
+            // Set event
+            btn_start_updates.setOnClickListener(View.OnClickListener {
+                if (ActivityCompat.checkSelfPermission(this@SplashActivity, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                        ActivityCompat.checkSelfPermission(this@SplashActivity, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+                    ActivityCompat.requestPermissions(this@SplashActivity, arrayOf(android.Manifest.permission.ACCESS_COARSE_LOCATION,
+                            android.Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_CODE)
+                    return@OnClickListener
+                }
+
+                fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper())
+
+                // Change state of button
+                btn_start_updates.isEnabled = !btn_start_updates.isEnabled
+                btn_stop_updates.isEnabled = !btn_stop_updates.isEnabled
+            })
+
+            btn_stop_updates.setOnClickListener(View.OnClickListener {
+                if (ActivityCompat.checkSelfPermission(this@SplashActivity, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                        ActivityCompat.checkSelfPermission(this@SplashActivity, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+                    ActivityCompat.requestPermissions(this@SplashActivity, arrayOf(android.Manifest.permission.ACCESS_COARSE_LOCATION,
+                            android.Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_CODE)
+                    return@OnClickListener
+                }
+
+                fusedLocationProviderClient.removeLocationUpdates(locationCallback)
+
+                // Change state of button
+                btn_start_updates.isEnabled = !btn_start_updates.isEnabled
+                btn_stop_updates.isEnabled = !btn_stop_updates.isEnabled
+            })
         }
     }
 
@@ -49,88 +74,33 @@ class SplashActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks,
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
         when(requestCode) {
-            PERMISSION_REQUEST_CODE -> {
-                if(grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    if(checkPlayService()) {
-                        buildGoogleApiClient()
+            REQUEST_CODE -> {
+                if (grantResults.isNotEmpty()) {
+                    if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                        Toast.makeText(this@SplashActivity, "Permission granted", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(this@SplashActivity, "Permission denied", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
         }
     }
 
-    private fun buildGoogleApiClient() {
-        mGoogleApiClient = GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API).build()
+    private fun buildLocationRequest() {
+        locationRequest = LocationRequest()
+        locationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        locationRequest.interval = 5000
+        locationRequest.fastestInterval = 3000
+        locationRequest.smallestDisplacement = 10f
     }
 
-    private fun checkPlayService(): Boolean {
-        var resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this)
+    private fun buildLocationCallBack() {
+        locationCallback = object: LocationCallback() {
 
-        if(resultCode == ConnectionResult.SUCCESS) {
-            if(GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
-                GooglePlayServicesUtil.getErrorDialog(resultCode, this, PLAY_SERVICE_RESOLUTION_REQUEST).show()
-            } else {
-                Toast.makeText(applicationContext, "This device is not supported", Toast.LENGTH_SHORT).show()
-                finish()
+            override fun onLocationResult(p0: LocationResult?) {
+                var location = p0!!.locations.get(p0!!.locations.size-1) // Get last location
+                txt_location.text = location.latitude.toString() + " / " + location.longitude.toString()
             }
-
-            return false
         }
-
-        return true
-    }
-
-    override fun onConnected(p0: Bundle?) {
-        createLocationRequest()
-    }
-
-    private fun createLocationRequest() {
-        mLocationRequest = LocationRequest()
-        mLocationRequest!!.interval = 10000 // 10 sec
-        mLocationRequest!!.fastestInterval = 5000 // 5 sec
-        mLocationRequest!!.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-
-            return
-        }
-
-        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this)
-    }
-
-    override fun onConnectionFailed(p0: ConnectionResult) {
-        Log.i("ERROR", "connection failed: " + p0.errorCode)
-    }
-
-    override fun onLocationChanged(location: Location?) {
-        // location!!.latitude
-        // location!!.longitude
-    }
-
-    override fun onConnectionSuspended(p0: Int) {
-        mGoogleApiClient!!.connect()
-    }
-
-    override fun onStart() {
-        super.onStart()
-
-        if(mGoogleApiClient != null) {
-            mGoogleApiClient!!.connect()
-        }
-    }
-
-    override fun onDestroy() {
-        mGoogleApiClient!!.disconnect()
-        super.onDestroy()
-    }
-
-    override fun onResume() {
-        super.onResume()
-
-        checkPlayService()
     }
 }
