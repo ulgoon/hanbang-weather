@@ -1,5 +1,6 @@
 package com.example.avoirom.hanbangweather
 
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Looper
@@ -98,8 +99,14 @@ class SplashActivity : AppCompatActivity() {
         locationCallback = object: LocationCallback() {
 
             override fun onLocationResult(p0: LocationResult?) {
-                var location = p0!!.locations.get(p0!!.locations.size-1) // Get last location
+                val location = p0!!.locations.get(p0!!.locations.size-1) // Get last location
                 txt_location.text = location.latitude.toString() + " / " + location.longitude.toString()
+
+                val intent = Intent(baseContext, MainActivity::class.java)
+                intent.putExtra("latitude", location.latitude.toInt().toString())
+                intent.putExtra("longitude", location.longitude.toInt().toString())
+                startActivity(intent)
+                finish()
             }
         }
     }
