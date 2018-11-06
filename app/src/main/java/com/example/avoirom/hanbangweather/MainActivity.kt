@@ -1,6 +1,5 @@
 package com.example.avoirom.hanbangweather
 
-import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -21,8 +20,22 @@ class MainActivity : AppCompatActivity() {
         val latitude = intent.getStringExtra("latitude")
         val longitude = intent.getStringExtra("longitude")
 
-        val date = LocalDateTime.now()
+        /*
+        Fuel.get("http://openapi.airkorea.or.kr/openapi/services/rest/ArpltnInforInqireSvc/getNearbyMsrstnList",
+            listOf("tmX" to -398702.7502,
+                "tmY" to 596416.9718,
+                "pageNo" to 1,
+                "numOfRows" to 10,
+                "ServiceKey" to "XbOzEV3nuUkqfJyF8zYK4p9wu2V1Zu82VtAORedk4J6ZcKTVH5h02Xz1uxF6TD01a3O8Qm%2Fqsj4%2BA8VnIL4Rrw%3D%3D"
+            )).responseJson { request, response, result ->
 
+            if (response.httpResponseMessage == "OK" && response.httpStatusCode == 200) {
+                //Log.d(TAG, result.get().obj().toString())
+            }
+        }
+
+        val date = LocalDateTime.now()
+*/
         /*
         val minute = date.minute
         var hour: Int
@@ -39,13 +52,14 @@ class MainActivity : AppCompatActivity() {
 
         */
 
-
+/*
         val year = date.year.toString()
         val month = date.monthValue.toString().padStart(2, '0')
         val day = date.dayOfMonth.toString().padStart(2, '0')
         val hour = (3 * (date.hour / 3 ) - 1).toString().padStart(2, '0')
         val minute = date.minute.toString().padStart(2, '0')
-
+        */
+/*
         Fuel.get("http://newsky2.kma.go.kr/service/SecndSrtpdFrcstInfoService2/ForecastSpaceData",
             listOf("ServiceKey" to "XbOzEV3nuUkqfJyF8zYK4p9wu2V1Zu82VtAORedk4J6ZcKTVH5h02Xz1uxF6TD01a3O8Qm%2Fqsj4%2BA8VnIL4Rrw%3D%3D",
                 "ServiceKey" to "TEST_SERVICE_KEY",
@@ -62,6 +76,11 @@ class MainActivity : AppCompatActivity() {
                 weatherJsonParser(result.get().obj().getJSONObject("response").getJSONObject("body").getJSONObject("items").toString())
             }
         }
+        */
+
+        val transCoordThread = TransCoordThread(latitude, longitude)
+        transCoordThread.start()
+
     }
 
     private fun weatherJsonParser(jsonString: String) {
