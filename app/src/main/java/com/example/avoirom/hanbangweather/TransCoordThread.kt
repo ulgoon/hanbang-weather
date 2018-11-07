@@ -8,10 +8,14 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.nio.charset.Charset
 
+// Android GPS 경도, 위도 값을 TM 좌표로 변경해주는 쓰레드
 class TransCoordThread(private val latitude: String, private val longitude: String) : Thread() {
 
     private val mRequestAddress = "https://dapi.kakao.com/v2/local/geo/transcoord"
-    private val mAPIkey = "0aea8adb196b0c94e06dfc9bb6e95510"
+    private val mAPIkey = "서비스키"
+
+    private var x: String = ""
+    private var y: String = ""
 
     override fun run() {
         try {
@@ -29,7 +33,15 @@ class TransCoordThread(private val latitude: String, private val longitude: Stri
                 val y = coord.getString("y")
 
                 Log.d("TransCoordThread", "$x $y")
+
+                this.x = x
+                this.y = y
             }
+
+            conn.disconnect()
+
+            val getStationThread = GetStationThread(x , y)
+            getStationThread.start()
 
         } catch (e: Exception) {
             e.stackTrace
