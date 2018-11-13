@@ -12,7 +12,7 @@ import java.nio.charset.Charset
 class TransCoordThread(private val latitude: String, private val longitude: String) : Thread() {
 
     private val mRequestAddress = "https://dapi.kakao.com/v2/local/geo/transcoord"
-    private val mAPIkey = "서비스키"
+    private val mAPIkey = "0aea8adb196b0c94e06dfc9bb6e95510"
 
     private var x: String = ""
     private var y: String = ""
