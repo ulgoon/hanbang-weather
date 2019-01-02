@@ -15,18 +15,17 @@ class SplashActivity : AppCompatActivity() {
 
     private val TAG = "SplashActivity"
 
-    lateinit var fusedLocationProviderClient: FusedLocationProviderClient
-    lateinit var locationRequest: LocationRequest
-    lateinit var locationCallback: LocationCallback
+    private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
+    private lateinit var locationRequest: LocationRequest
+    private lateinit var locationCallback: LocationCallback
 
-    val REQUEST_CODE =1000
+    private val REQUEST_CODE = 1000
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
 
         // Check permission
-
         if (ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.ACCESS_FINE_LOCATION))
             ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_CODE)
         else {
@@ -99,7 +98,7 @@ class SplashActivity : AppCompatActivity() {
         locationCallback = object: LocationCallback() {
 
             override fun onLocationResult(p0: LocationResult?) {
-                val location = p0!!.locations.get(p0!!.locations.size-1) // Get last location
+                val location = p0!!.locations[p0.locations.size-1] // Get last location
                 txt_location.text = location.latitude.toString() + " / " + location.longitude.toString()
 
                 val intent = Intent(baseContext, MainActivity::class.java)
