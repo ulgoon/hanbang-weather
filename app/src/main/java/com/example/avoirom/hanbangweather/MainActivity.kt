@@ -27,6 +27,7 @@ class MainActivity : AppCompatActivity() {
         val latitude = intent.getStringExtra("latitude")
         val longitude = intent.getStringExtra("longitude")
 
+        Log.d("GetOne", "${latitude.toDouble()} // ${longitude.toDouble()}")
         val date = LocalDateTime.now()
 
         /*
@@ -181,16 +182,17 @@ class MainActivity : AppCompatActivity() {
         var SLAT2 = 60.0 // 투영 위도2(degree)
         var OLON = 126.0 // 기준점 경도(degree)
         var OLAT = 38.0 // 기준점 위도(degree)
-        var XO = 43 // 기준점 X좌표(GRID)
-        var YO = 136 // 기1준점 Y좌표(GRID)
+        var XO = 210 / GRID // 기준점 X좌표(GRID)
+        var YO = 675 / GRID// 기1준점 Y좌표(GRID)
 
         //
         // LCC DFS 좌표변환 ( code : "TO_GRID"(위경도->좌표, lat_X:위도,  lng_Y:경도), "TO_GPS"(좌표->위경도,  lat_X:x, lng_Y:y) )
         //
 
-
-        var DEGRAD = Math.PI / 180.0
-        var RADDEG = 180.0 / Math.PI
+        
+        var PI = Math.PI
+        var DEGRAD = PI / 180.0
+        var RADDEG = 180.0 / PI
 
         var re = RE / GRID
         var slat1 = SLAT1 * DEGRAD
@@ -198,30 +200,30 @@ class MainActivity : AppCompatActivity() {
         var olon = OLON * DEGRAD
         var olat = OLAT * DEGRAD
 
-
-
         override fun run() {
             try {
-                var sn = Math.tan(Math.PI * 0.25 + slat2 * 0.5) / Math.tan(Math.PI * 0.25 + slat1 * 0.5)
+                var sn = Math.tan(PI * 0.25 + slat2 * 0.5) / Math.tan(PI * 0.25 + slat1 * 0.5)
                 sn = Math.log(Math.cos(slat1) / Math.cos(slat2)) / Math.log(sn)
-                var sf = Math.tan(Math.PI * 0.25 + slat1 * 0.5)
+                var sf = Math.tan(PI * 0.25 + slat1 * 0.5)
                 sf = Math.pow(sf, sn) * Math.cos(slat1) / sn
-                var ro = Math.tan(Math.PI * 0.25 + olat * 0.5)
+                var ro = Math.tan(PI * 0.25 + olat * 0.5)
                 ro = re * sf / Math.pow(ro, sn)
 
-                var ra = Math.tan(Math.PI * 0.25 + (latitude.toDouble()) * DEGRAD * 0.5)
+                Log.d("Get", "${latitude.toDouble()} // ${longitude.toDouble()}")
+                var ra = Math.tan(PI * 0.25 + (latitude.toDouble()) * DEGRAD * 0.5)
                 ra = re * sf / Math.pow(ra, sn)
                 var theta = longitude.toDouble() * DEGRAD - olon
 
-                if (theta > Math.PI) theta -= 2.0 * Math.PI
-                if (theta < -Math.PI) theta += 2.0 * Math.PI
+                if (theta > PI) theta -= 2.0 * PI
+                if (theta < -PI) theta += 2.0 * PI
                 theta *= sn;
 
-                val x = Math.floor(ra * Math.sin(theta) + XO + 0.5).toString()
-                val y = Math.floor(ro - ra * Math.cos(theta) + YO + 0.5).toString()
+                val x = Math.floor(ra * Math.sin(theta) + XO + 1.5).toString()
+                val y = Math.floor(ro - ra * Math.cos(theta) + YO + 1.5).toString()
 
-                val getWeatherThread = GetWeatherThread(x, y, "20181228", "2200")
-                getWeatherThread.start()
+                Log.d("GetTransThread", "$x // $y")
+                //val getWeatherThread = GetWeatherThread(x, y, "20190103", "0900")
+                //getWeatherThread.start()
 
             } catch (e: Exception) {
                 e.stackTrace
