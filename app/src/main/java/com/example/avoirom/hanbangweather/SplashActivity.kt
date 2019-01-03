@@ -102,8 +102,8 @@ class SplashActivity : AppCompatActivity() {
                 txt_location.text = location.latitude.toString() + " / " + location.longitude.toString()
 
                 val intent = Intent(baseContext, MainActivity::class.java)
-                intent.putExtra("latitude", location.latitude.toInt().toString())
-                intent.putExtra("longitude", location.longitude.toInt().toString())
+                intent.putExtra("latitude", location.latitude.toString())
+                intent.putExtra("longitude", location.longitude.toString())
                 startActivity(intent)
                 finish()
             }
