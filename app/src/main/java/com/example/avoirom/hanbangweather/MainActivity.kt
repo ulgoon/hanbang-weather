@@ -199,7 +199,7 @@ class MainActivity : AppCompatActivity() {
         var slat2 = SLAT2 * DEGRAD
         var olon = OLON * DEGRAD
         var olat = OLAT * DEGRAD
-        
+
         override fun run() {
             try {
                 var sn = Math.tan(PI * 0.25 + slat2 * 0.5) / Math.tan(PI * 0.25 + slat1 * 0.5)
